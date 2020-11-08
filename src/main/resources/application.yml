@@ -1,0 +1,10 @@
+server:
+  port: 10086
+spring:
+  application:
+    name: create-word-service
+  datasource:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/baiying
+    username: root
+    password: root
