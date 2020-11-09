@@ -98,13 +98,19 @@ public class CreateWordService {
                 row = baseTable.createRow();
             }
             XWPFTableCell cell = row.getCell(0);
-            setContextCenter(cell);
-            cell.setText(infoTable.title);
+//            setContextCenter(cell);
+            cell.setText(" " + infoTable.title);
             if (i == 0) {
                 String comment = findBaseTableInfo(schemaName, tableName);
-                row.addNewTableCell().setText(StringUtils.isBlank(comment) ? "" : comment);
+                row.addNewTableCell().setText(StringUtils.isBlank(comment) ? "" : " " + comment);
             } else {
-                row.getCell(1).setText(tableName);
+                row.getCell(1).setText(" " + tableName);
+            }
+
+            if (i != InfoTableCellEnum.values().length - 1) {
+                row.getCtRow().getTcList().forEach(
+                        ctTc -> ctTc.addNewTcPr().addNewTcBorders().addNewBottom().setVal(STBorder.Enum.forString("none"))
+                );
             }
         }
     }
