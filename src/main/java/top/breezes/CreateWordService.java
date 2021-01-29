@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -33,20 +34,42 @@ public class CreateWordService {
     @Resource
     private JdbcTemplate jdbcTemplate;
 
-    public void run(String schemaName, String tableNames, String filePath) {
-        String[] tableNameArray = tableNames.split(",");
-        if (tableNameArray.length <= 0) {
-            return;
-        }
-        Map<String, List<TableInfo>> tableInfoMap = Stream.of(tableNameArray)
+    public void run(String schemaName, List<String> tableNames, String filePath) {
+        check(tableNames, filePath);
+        Map<String, List<TableInfo>> tableInfoMap = tableNames.stream()
                 .collect(
                         Collectors.toMap(Function.identity(), tableName -> findTableInfo(schemaName, tableName))
                 );
+        createWordFile(schemaName, filePath, tableInfoMap);
+    }
 
-        if (StringUtils.isBlank(filePath)) {
-            throw new RuntimeException();
+    public void run(String schemaName, String tableName, String filePath) {
+        check(tableName, filePath);
+        List<TableInfo> tableInfo = findTableInfo(schemaName, tableName);
+
+        createWordFile(schemaName, filePath, new HashMap<String, List<TableInfo>>() {{
+            put(tableName, tableInfo);
+        }});
+    }
+
+    private void check(List<String> tableNames, String filePath) {
+        if (Objects.isNull(tableNames) || StringUtils.isBlank(filePath)) {
+            throw new NullPointerException();
         }
+        for (String tableName : tableNames) {
+            if (StringUtils.isBlank(tableName)) {
+                throw new NullPointerException();
+            }
+        }
+    }
 
+    private void check(String tableName, String filePath) {
+        if (StringUtils.isAnyBlank(tableName, filePath)) {
+            throw new NullPointerException();
+        }
+    }
+
+    private void createWordFile(String schemaName, String filePath, Map<String, List<TableInfo>> tableInfoMap) {
         try (FileOutputStream out = new FileOutputStream(new File(filePath));
              XWPFDocument document = new XWPFDocument()) {
 
